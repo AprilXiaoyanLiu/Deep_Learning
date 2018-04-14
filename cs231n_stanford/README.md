@@ -17,4 +17,7 @@ gradient descent algorithm:
 ## Backpropagation
 
 Chain rule
+
 when calcuate gradients, magnitude matters 
+
+* The gradient of a vector is always going to be the same size as the original vector, and each element is gradient is going to mean how much of that particular element is going to affect final output of function
