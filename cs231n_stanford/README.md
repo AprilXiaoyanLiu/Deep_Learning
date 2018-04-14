@@ -12,3 +12,9 @@ softmax loss: compute the probability distribution and look at the minus log pro
 
 gradient descent algorithm: 
 - learning rate - hyper parameter is always the first thing to check?
+
+
+## Backpropagation
+
+Chain rule
+when calcuate gradients, magnitude matters 
