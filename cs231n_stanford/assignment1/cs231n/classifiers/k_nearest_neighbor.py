@@ -1,5 +1,6 @@
 import numpy as np
 from past.builtins import xrange
+from collections import Counter
 
 
 class KNearestNeighbor(object):
@@ -127,7 +128,7 @@ class KNearestNeighbor(object):
     #       and two broadcast sums.                                         #
     #########################################################################
     X_train2 = np.sum(np.square(self.X_train), axis=1)
-    X_2 = np.sum(np.sqaure(X), axis=1)
+    X_2 = np.sum(np.square(X), axis=1)
     dists = np.sqrt(X_2[:, np.newaxis] + X_train2 - 2 * X.dot(self.X_train.T))
     #pass
     #########################################################################
@@ -161,7 +162,8 @@ class KNearestNeighbor(object):
       # neighbors. Store these labels in closest_y.                           #
       # Hint: Look up the function numpy.argsort.                             #
       #########################################################################
-      
+      idx = np.argsort(dists[i])[0:k]
+      closest_y = self.y_train[idx]
       #########################################################################
       # TODO:                                                                 #
       # Now that you have found the labels of the k nearest neighbors, you    #
@@ -169,7 +171,7 @@ class KNearestNeighbor(object):
       # Store this label in y_pred[i]. Break ties by choosing the smaller     #
       # label.                                                                #
       #########################################################################
-      pass
+      y_pred[i] = Counter(closest_y).most_common(1)[0][0]
       #########################################################################
       #                           END OF YOUR CODE                            # 
       #########################################################################
