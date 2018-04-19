@@ -26,9 +26,11 @@ def svm_loss_naive(W, X, y, reg):
   num_classes = W.shape[1]
   num_train = X.shape[0]
   loss = 0.0
+  
   for i in xrange(num_train):
     scores = X[i].dot(W)
     correct_class_score = scores[y[i]]
+    loss_contributors_count = 0
     for j in xrange(num_classes):
       if j == y[i]:
         continue
@@ -36,12 +38,28 @@ def svm_loss_naive(W, X, y, reg):
       if margin > 0:
         loss += margin
 
+      # Compute gradients (one inner and one outer sum)
+        # Wonderfully compact and hard to read
+        #dW[y[i],:] -= X[:,i].T # this is really a sum over j != y_i
+        #dW[j,:] += X[:,i].T # sums each contribution of the x_i's
+        # incorrect class gradient part
+        dW[:, j] += X[i]
+          # count contributor terms to loss function
+        loss_contributors_count += 1
+    # correct class gradient part
+    dW[:, y[i]] += (-1) * loss_contributors_count * X[i]
+
+
+
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
   loss /= num_train
+  dW /= num_train
 
-  # Add regularization to the loss.
+    # Add regularization to the loss.
   loss += reg * np.sum(W * W)
+    # Add regularization to the gradient
+  dW += 2 * reg * W
 
   #############################################################################
   # TODO:                                                                     #
@@ -64,13 +82,23 @@ def svm_loss_vectorized(W, X, y, reg):
   """
   loss = 0.0
   dW = np.zeros(W.shape) # initialize the gradient as zero
-
+  num_train = X.shape[0]
   #############################################################################
   # TODO:                                                                     #
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  pass
+  s = X.dot(W)
+  # read correct scores into a column array of height N
+  correct_score = s[list(range(num_train)), y]
+  correct_score = correct_score.reshape(num_train, -1)
+  # subtract correct scores from score matrix and add margin
+  s += 1 - correct_score
+  # make sure correct scores themselves don't contribute to loss function
+  s[list(range(num_train)), y] = 0
+  # construct loss function
+  loss = np.sum(np.fmax(s, 0)) / num_train
+  loss += reg * np.sum(W * W)
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -85,7 +113,13 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  pass
+  X_mask = np.zeros(s.shape)
+  X_mask[s > 0] = 1
+  X_mask[np.arange(num_train), y] = -np.sum(X_mask, axis=1)
+  dW = X.T.dot(X_mask)
+  dW /= num_train
+  dW += 2 * reg * W
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
